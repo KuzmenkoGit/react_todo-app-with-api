@@ -20,6 +20,23 @@ const filtredTodos = (status: StatusTodos, todos: Todo[]): Todo[] => {
   });
 };
 
+const FILTERS_ORDER = [
+  StatusTodos.ALL,
+  StatusTodos.ACTIVE,
+  StatusTodos.COMPLETED,
+];
+
+const getFilterHref = (status: StatusTodos) => {
+  switch (status) {
+    case StatusTodos.ACTIVE:
+      return '#/active';
+    case StatusTodos.COMPLETED:
+      return '#/completed';
+    default:
+      return '#/';
+  }
+};
+
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loadingIds, setLoadingIds] = useState<number[]>([]);
@@ -207,7 +224,7 @@ export const App: React.FC = () => {
       });
   }
 
-  function handleUpdateTitle(todoId: number, newTitle: string) {
+  async function handleUpdateTitle(todoId: number, newTitle: string) {
     setLoadingIds(prev => [...prev, todoId]);
 
     return updateTodo(todoId, { title: newTitle })
@@ -256,50 +273,28 @@ export const App: React.FC = () => {
           onUpdateTitle={handleUpdateTitle}
         />
 
-        {/* Hide the footer if there are no todos */}
         {todos.length > 0 && (
           <footer className="todoapp__footer" data-cy="Footer">
             <span className="todo-count" data-cy="TodosCounter">
               {todos.filter(todo => !todo.completed).length} items left
             </span>
 
-            {/* Active link should have the 'selected' class */}
             <nav className="filter" data-cy="Filter">
-              <a
-                href="#/"
-                className={classNames('filter__link', {
-                  selected: filterStatus === StatusTodos.ALL,
-                })}
-                data-cy="FilterLinkAll"
-                onClick={() => setFilterStatus(StatusTodos.ALL)}
-              >
-                All
-              </a>
-
-              <a
-                href="#/active"
-                className={classNames('filter__link', {
-                  selected: filterStatus === StatusTodos.ACTIVE,
-                })}
-                data-cy="FilterLinkActive"
-                onClick={() => setFilterStatus(StatusTodos.ACTIVE)}
-              >
-                Active
-              </a>
-
-              <a
-                href="#/completed"
-                className={classNames('filter__link', {
-                  selected: filterStatus === StatusTodos.COMPLETED,
-                })}
-                data-cy="FilterLinkCompleted"
-                onClick={() => setFilterStatus(StatusTodos.COMPLETED)}
-              >
-                Completed
-              </a>
+              {FILTERS_ORDER.map(filter => (
+                <a
+                  key={filter}
+                  href={getFilterHref(filter)}
+                  className={classNames('filter__link', {
+                    selected: filterStatus === filter,
+                  })}
+                  data-cy={`FilterLink${filter}`}
+                  onClick={() => setFilterStatus(filter)}
+                >
+                  {filter}
+                </a>
+              ))}
             </nav>
 
-            {/* this button should be disabled if there are no completed todos */}
             <button
               type="button"
               className="todoapp__clear-completed"
@@ -313,8 +308,6 @@ export const App: React.FC = () => {
         )}
       </div>
 
-      {/* DON'T use conditional rendering to hide the notification */}
-      {/* Add the 'hidden' class to hide the message smoothly */}
       <div
         data-cy="ErrorNotification"
         className={classNames(

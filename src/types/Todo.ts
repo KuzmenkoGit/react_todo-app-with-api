@@ -15,7 +15,7 @@ export enum ErrorMessages {
 }
 
 export enum StatusTodos {
-  COMPLETED,
-  ACTIVE,
-  ALL,
+  COMPLETED = 'Completed',
+  ACTIVE = 'Active',
+  ALL = 'All',
 }
